@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shiny Time Tracker</title>
+    <title>Shiny Time Tracker (Cloud Sync)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -21,279 +21,267 @@
 
         .container {
             width: 100%;
-            max-width: 650px; /* Slightly widened to accommodate the longer text string */
+            max-width: 650px;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 2rem;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .glass-card {
+        /* Glassmorphism Styles */
+        .glass-panel {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
             margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .glass-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.15);
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        h1 { margin: 0; font-size: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+
+        /* Buttons & Inputs */
+        input {
+            width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4); padding: 1rem; border-radius: 10px;
+            color: white; font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none;
+            margin-bottom: 1rem; transition: all 0.3s ease;
         }
+        input::placeholder { color: rgba(255,255,255,0.6); }
+        input:focus { background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
         .btn-shiny {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white;
+            border: none; padding: 0.75rem 1.5rem; border-radius: 50px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; text-decoration: none;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease; display: inline-block;
         }
+        .btn-shiny:hover { box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); transform: translateY(-2px); }
+        
+        .btn-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4); }
+        .btn-danger:hover { box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6); }
 
-        .btn-shiny:hover {
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
-            transform: scale(1.05);
+        /* Screen Toggles */
+        #appScreen, #loadingScreen { display: none; }
+        
+        /* Tracker Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
+            padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
         }
-
-        .btn-delete {
-            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
-            margin-top: 10px;
-        }
-
-        .btn-delete:hover {
-            box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6);
-        }
-
         .tracker-info h2 { margin: 0 0 5px 0; font-size: 1.4rem; }
         .tracker-info p { margin: 0; color: #e0e0e0; font-size: 0.95rem; font-weight: 300;}
-        
-        .tracker-time-container {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        
-        .tracker-main-time {
-            font-size: 1.8rem;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            white-space: nowrap;
-        }
-        
-        .tracker-subtext {
-            font-size: 0.8rem;
-            font-weight: 400;
-            opacity: 0.75;
-            margin-top: 6px;
-            white-space: nowrap;
-            background: rgba(0, 0, 0, 0.15);
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
+        .tracker-time-container { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .tracker-main-time { font-size: 1.8rem; font-weight: 700; }
+        .tracker-subtext { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>My Trackers</h1>
-            <a href="add.html" class="btn-shiny">+ Add New Event</a>
+
+        <!-- 1. LOADING SCREEN -->
+        <div id="loadingScreen" class="glass-panel" style="text-align: center;">
+            <h2>Connecting to Cloud...</h2>
         </div>
 
-        <div id="trackerList">
-            <!-- Trackers will be injected here -->
+        <!-- 2. LOGIN SCREEN -->
+        <div id="loginScreen" class="glass-panel" style="text-align: center; max-width: 400px; margin: 0 auto;">
+            <h1>Welcome Back</h1>
+            <p style="margin-bottom: 2rem; opacity: 0.8;">Sign in to sync your trackers</p>
+            <input type="email" id="emailInput" placeholder="Email address">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1rem;">
+                <button id="loginBtn" class="btn-shiny">Login</button>
+                <button id="registerBtn" class="btn-shiny" style="background: transparent; border: 1px solid white; box-shadow: none;">Register</button>
+            </div>
+            <p id="authError" style="color: #ffb3b3; font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
         </div>
+
+        <!-- 3. MAIN DASHBOARD SCREEN -->
+        <div id="appScreen">
+            <div class="header">
+                <div>
+                    <h1>My Trackers</h1>
+                    <p id="userEmailDisplay" style="margin: 0; font-size: 0.8rem; opacity: 0.7;"></p>
+                </div>
+                <div>
+                    <a href="add.html" class="btn-shiny">+ Add Event</a>
+                    <button id="logoutBtn" class="btn-shiny btn-danger" style="padding: 0.5rem 1rem; margin-left: 10px; font-size: 0.85rem;">Logout</button>
+                </div>
+            </div>
+            <div id="trackerList"></div>
+        </div>
+
     </div>
 
-    <script>
-        const STORAGE_KEY = 'multi_event_trackers';
+    <!-- FIREBASE SDKs (Using standard modules for browser) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-        /**
-         * Formats a standard YYYY-MM-DD string into Danish dd-mm-yyyy
-         */
-        function formatDanishDate(dateStr) {
-            if (!dateStr || !dateStr.includes('-')) return dateStr;
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        // ==========================================
+        // 🔥 STEP 2: PASTE YOUR FIREBASE CONFIG HERE
+        // ==========================================
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzefQpOR6Z-894YxY805P73PK6AfqqGsw",
+            authDomain: "shiny-tracker-f6702.firebaseapp.com",
+            projectId: "shiny-tracker-f6702",
+            storageBucket: "shiny-tracker-f6702.firebasestorage.app",
+            messagingSenderId: "227154149489",
+            appId: "1:227154149489:web:735c5da8ab76a8033adbd0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI Elements
+        const screens = {
+            loading: document.getElementById('loadingScreen'),
+            login: document.getElementById('loginScreen'),
+            app: document.getElementById('appScreen')
+        };
+        const trackerList = document.getElementById('trackerList');
+        const authError = document.getElementById('authError');
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.style.display = 'none');
+            screens[screenName].style.display = 'block';
         }
 
-        /**
-         * Calculates precise total days, exact calendar years, remaining days, and hours.
-         */
-        function calculateTimeSince(targetDateStr, currentDateObj = new Date()) {
-            if (!targetDateStr) return null;
-            
-            const targetDate = new Date(targetDateStr);
-            if (isNaN(targetDate.getTime())) return null;
+        // ==========================================
+        // DATABASE LOGIC (Firestore)
+        // ==========================================
+        let currentTrackers = [];
 
-            const msTarget = targetDate.getTime();
-            const msNow = currentDateObj.getTime();
-            const isPast = msNow >= msTarget;
-            
-            // Calculate Total Days and Hours
-            const diffMs = Math.abs(msNow - msTarget);
-            const msPerHour = 1000 * 60 * 60;
-            const totalHours = Math.floor(diffMs / msPerHour);
-            const totalDays = Math.floor(totalHours / 24);
-            const hours = totalHours % 24;
-
-            // Calculate Exact Calendar Years and Remaining Days
-            let start = isPast ? new Date(targetDate) : new Date(currentDateObj);
-            let end = isPast ? new Date(currentDateObj) : new Date(targetDate);
-
-            let years = end.getFullYear() - start.getFullYear();
-            
-            // Adjust if end date is earlier in the year than the start date
-            if (end.getMonth() < start.getMonth() || (end.getMonth() === start.getMonth() && end.getDate() < start.getDate())) {
-                years--;
+        async function fetchTrackers(user) {
+            try {
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    currentTrackers = docSnap.data().trackers || [];
+                } else {
+                    currentTrackers = [];
+                }
+                renderTrackers();
+                // Overwrite localStorage so add.html knows what to append to
+                localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers)); 
+            } catch (error) {
+                console.error("Error fetching data:", error);
             }
-            if (years < 0) years = 0;
+        }
 
-            // Advance the start date by the exact number of years calculated
-            let dateAfterYears = new Date(start);
-            dateAfterYears.setFullYear(dateAfterYears.getFullYear() + years);
+        window.deleteTrackerFromCloud = async function(id) {
+            if(!auth.currentUser) return;
+            currentTrackers = currentTrackers.filter(t => t.id !== id);
             
-            // Calculate remaining days between the advanced date and the end date
-            const remainingMs = end.getTime() - dateAfterYears.getTime();
-            const daysAfterYears = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
-
-            return {
-                isPast: isPast,
-                totalDays: totalDays,
-                years: years,
-                days: daysAfterYears,
-                hours: hours
-            };
-        }
-
-        function getTrackers() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : [];
-        }
-
-        function saveTrackers(trackers) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(trackers));
-        }
-
-        function deleteTracker(id) {
-            let trackers = getTrackers();
-            trackers = trackers.filter(t => t.id !== id);
-            saveTrackers(trackers);
+            // Update Firestore
+            await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
+            // Update local copy
+            localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
             renderTrackers();
         }
 
-        function renderTrackers() {
-            const trackerList = document.getElementById('trackerList');
-            trackerList.innerHTML = '';
-            const trackers = getTrackers();
+        // ==========================================
+        // AUTHENTICATION LOGIC
+        // ==========================================
+        showScreen('loading');
 
-            if (trackers.length === 0) {
-                trackerList.innerHTML = '<p style="text-align:center; opacity:0.8;">No events tracked yet. Click "Add New Event" to start!</p>';
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                showScreen('app');
+                fetchTrackers(user);
+                
+                // Save uid locally so add.html can use it to save to the cloud
+                localStorage.setItem('current_uid', user.uid); 
+            } else {
+                showScreen('login');
+                localStorage.removeItem('current_uid');
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const e = document.getElementById('emailInput').value;
+            const p = document.getElementById('passwordInput').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => {
+                authError.textContent = err.message; authError.style.display = 'block';
+            });
+        });
+
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            const e = document.getElementById('emailInput').value;
+            const p = document.getElementById('passwordInput').value;
+            createUserWithEmailAndPassword(auth, e, p).catch(err => {
+                authError.textContent = err.message; authError.style.display = 'block';
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+        // ==========================================
+        // RENDER & TIME LOGIC (Same as before)
+        // ==========================================
+        function calculateTimeSince(targetDateStr, currentDateObj = new Date()) {
+            if (!targetDateStr) return null;
+            const msTarget = new Date(targetDateStr).getTime();
+            const msNow = currentDateObj.getTime();
+            const isPast = msNow >= msTarget;
+            const totalHours = Math.floor(Math.abs(msNow - msTarget) / (1000 * 60 * 60));
+            const totalDays = Math.floor(totalHours / 24);
+            
+            let start = isPast ? new Date(targetDateStr) : new Date(currentDateObj);
+            let end = isPast ? new Date(currentDateObj) : new Date(targetDateStr);
+            let years = end.getFullYear() - start.getFullYear();
+            if (end.getMonth() < start.getMonth() || (end.getMonth() === start.getMonth() && end.getDate() < start.getDate())) years--;
+            if (years < 0) years = 0;
+            
+            let dateAfterYears = new Date(start);
+            dateAfterYears.setFullYear(dateAfterYears.getFullYear() + years);
+            const daysAfterYears = Math.floor((end.getTime() - dateAfterYears.getTime()) / (1000 * 60 * 60 * 24));
+
+            return { isPast, totalDays, years, days: daysAfterYears, hours: totalHours % 24 };
+        }
+
+        function formatDanishDate(dateStr) {
+            const parts = dateStr.split('-');
+            return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
+        }
+
+        function renderTrackers() {
+            trackerList.innerHTML = '';
+            if (currentTrackers.length === 0) {
+                trackerList.innerHTML = '<p style="text-align:center; opacity:0.8;">No events tracked yet. Click "Add Event" to start!</p>';
                 return;
             }
 
-            trackers.reverse().forEach(tracker => {
+            [...currentTrackers].reverse().forEach(tracker => {
                 const timeInfo = calculateTimeSince(tracker.date);
-                const danishDateString = formatDanishDate(tracker.date);
-                
-                // Helper to format words based on singular/plural
                 const p = (val, unit) => `${val} ${val === 1 ? unit : unit + 's'}`;
-                
-                const directionText = timeInfo.isPast ? 'since' : 'away';
-                const subtextString = `${p(timeInfo.years, 'year')} ${p(timeInfo.days, 'day')} ${p(timeInfo.hours, 'hour')} ${directionText}`;
+                const subtextString = `${p(timeInfo.years, 'year')} ${p(timeInfo.days, 'day')} ${p(timeInfo.hours, 'hour')} ${timeInfo.isPast ? 'since' : 'away'}`;
 
                 const card = document.createElement('div');
                 card.className = 'glass-card';
                 card.innerHTML = `
                     <div class="tracker-info">
                         <h2>${tracker.name}</h2>
-                        <p>${danishDateString}</p>
-                        <button class="btn-shiny btn-delete" data-id="${tracker.id}">Delete</button>
+                        <p>${formatDanishDate(tracker.date)}</p>
+                        <button class="btn-shiny btn-danger" onclick="deleteTrackerFromCloud('${tracker.id}')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-top: 10px;">Delete</button>
                     </div>
                     <div class="tracker-time-container">
-                        <div class="tracker-main-time">
-                            ${timeInfo.totalDays}d ${timeInfo.hours}h
-                        </div>
-                        <div class="tracker-subtext">
-                            ${subtextString}
-                        </div>
+                        <div class="tracker-main-time">${timeInfo.totalDays}d ${timeInfo.hours}h</div>
+                        <div class="tracker-subtext">${subtextString}</div>
                     </div>
                 `;
                 trackerList.appendChild(card);
             });
-
-            document.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    deleteTracker(e.target.getAttribute('data-id'));
-                });
-            });
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTrackers();
-            setInterval(renderTrackers, 1000 * 60 * 60); 
-        });
-
-        // ==========================================
-        // UNIT TESTS (Running silently in console)
-        // ==========================================
-        function runTests() {
-            console.log("Running Unit Tests for Advanced Time Math...");
-            function assertEqual(actual, expected, testName) {
-                if (actual === expected) {
-                    console.log(`✅ [PASS] ${testName}`);
-                } else {
-                    console.error(`❌ [FAIL] ${testName} - Expected: ${expected}, Got: ${actual}`);
-                }
-            }
-
-            const mockNow = new Date('2026-05-08T07:30:00Z');
-
-            // Test 1: Recent Date (Less than a year)
-            const recentTest = calculateTimeSince('2026-05-01', mockNow);
-            assertEqual(recentTest.totalDays, 7, "Recent: Total Days calculation");
-            assertEqual(recentTest.years, 0, "Recent: Years calculation");
-            assertEqual(recentTest.days, 7, "Recent: Remaining Days calculation");
-            assertEqual(recentTest.hours, 7, "Recent: Hours calculation");
-
-            // Test 2: Multi-Year Past Date (Exactly 2 years and 7 days ago)
-            const multiYearTest = calculateTimeSince('2024-05-01', mockNow);
-            assertEqual(multiYearTest.years, 2, "Multi-Year: Exact Calendar Years");
-            assertEqual(multiYearTest.days, 7, "Multi-Year: Remaining Days beyond full years");
-            assertEqual(multiYearTest.hours, 7, "Multi-Year: Hours remain accurate");
-
-            // Test 3: Future Date
-            const futureTest = calculateTimeSince('2027-06-15', mockNow);
-            assertEqual(futureTest.years, 1, "Future: Exact Calendar Years");
-            assertEqual(futureTest.isPast, false, "Future: Direction check");
-        }
-        runTests();
     </script>
 </body>
 </html>

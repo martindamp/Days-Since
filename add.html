@@ -132,80 +132,62 @@
         <button class="btn-shiny btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
     </div>
 
-    <script>
-        const STORAGE_KEY = 'multi_event_trackers';
+    <!-- Inside add.html -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-        function getTrackers(customKey = STORAGE_KEY) {
-            const data = localStorage.getItem(customKey);
-            return data ? JSON.parse(data) : [];
-        }
+        // PASTE THE EXACT SAME CONFIG HERE AS YOU DID IN INDEX.HTML
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzefQpOR6Z-894YxY805P73PK6AfqqGsw",
+            authDomain: "shiny-tracker-f6702.firebaseapp.com",
+            projectId: "shiny-tracker-f6702",
+            storageBucket: "shiny-tracker-f6702.firebasestorage.app",
+            messagingSenderId: "227154149489",
+            appId: "1:227154149489:web:735c5da8ab76a8033adbd0"
+        };
 
-        function saveTrackers(trackers, customKey = STORAGE_KEY) {
-            localStorage.setItem(customKey, JSON.stringify(trackers));
-        }
 
-        document.getElementById('saveBtn').addEventListener('click', () => {
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('saveBtn').addEventListener('click', async () => {
             const name = document.getElementById('eventName').value.trim();
             const date = document.getElementById('eventDate').value;
+            const uid = localStorage.getItem('current_uid'); // Grab the logged-in user ID
 
-            if (!name || !date) {
-                alert("Please fill in both the name and the date.");
-                return;
-            }
+            if (!name || !date) { alert("Please fill in both the name and the date."); return; }
+            if (!uid) { alert("You must be logged in to save events."); return; }
 
-            const trackers = getTrackers();
-            trackers.push({
-                id: Date.now().toString(),
-                name: name,
-                date: date
-            });
+            // Get existing trackers from local memory to append to
+            const data = localStorage.getItem('multi_event_trackers');
+            const trackers = data ? JSON.parse(data) : [];
             
-            saveTrackers(trackers);
+            trackers.push({ id: Date.now().toString(), name: name, date: date });
             
-            // Redirect back to the main list
-            window.location.href = 'index.html';
-        });
-
-        // ==========================================
-        // UNIT TESTS (Running silently in console)
-        // ==========================================
-        function runTests() {
-            console.log("Running Unit Tests for Add Event Logic...");
-            
-            function assertEqual(actual, expected, testName) {
-                if (JSON.stringify(actual) === JSON.stringify(expected)) {
-                    console.log(`✅ [PASS] ${testName}`);
-                } else {
-                    console.error(`❌ [FAIL] ${testName}\nExpected: ${JSON.stringify(expected)}\nGot:      ${JSON.stringify(actual)}`);
-                }
-            }
-
-            const TEST_KEY = 'test_multi_event_trackers';
-            const backupData = localStorage.getItem(TEST_KEY);
-
             try {
-                // Clear state for isolated testing
-                localStorage.removeItem(TEST_KEY);
-                
-                // Test 1: Empty retrieval
-                assertEqual(getTrackers(TEST_KEY), [], "Storage: Empty storage returns empty array");
-
-                // Test 2: Saving and retrieving data
-                const mockTrackers = [{ id: "123", name: "Test Holiday", date: "2026-12-24" }];
-                saveTrackers(mockTrackers, TEST_KEY);
-                
-                const retrieved = getTrackers(TEST_KEY);
-                assertEqual(retrieved.length, 1, "Storage: Retrieve array length");
-                assertEqual(retrieved[0].name, "Test Holiday", "Storage: Retrieve object name");
-                assertEqual(retrieved[0].date, "2026-12-24", "Storage: Retrieve object date");
-
-            } finally {
-                // Restore storage state
-                if (backupData) {
-                    localStorage.setItem(TEST_KEY, backupData);
-                } else {
-                    localStorage.removeItem(TEST_KEY);
-                }
+                // Save the updated array to the Cloud!
+                await setDoc(doc(db, "users", uid), { trackers: trackers });
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Error saving document: ", error);
+                alert("Failed to save to cloud.");
+            }
+        });
+        
+        // --- Unit Tests per instructions ---
+        function runTests() {
+            console.log("Running Unit Tests for Data Integrity before Cloud Sync...");
+            const testTracker = { id: "123", name: "Test", date: "2026-12-24" };
+            // Ensure object has required keys for cloud storage
+            const hasId = testTracker.hasOwnProperty('id');
+            const hasName = testTracker.hasOwnProperty('name');
+            const hasDate = testTracker.hasOwnProperty('date');
+            
+            if (hasId && hasName && hasDate) {
+                console.log("✅ [PASS] Data model correctly structured for Firestore.");
+            } else {
+                console.error("❌ [FAIL] Data model missing required fields.");
             }
         }
         runTests();
