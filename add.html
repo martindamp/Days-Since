@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Event</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            color: #fff;
+            /* Static, premium "shiny" gradient matching index.html */
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #23a6d5 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            opacity: 0.9;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.5); }
+        
+        input:focus {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Note: Browser default date pickers are often white/gray and cannot be fully styled with pure CSS, 
+           but the input box itself will remain glassy */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn-shiny {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-shiny:hover {
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            box-shadow: none;
+            border: 1px solid rgba(255,255,255,0.5);
+            margin-top: 1rem;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-container">
+        <h1>Track New Event</h1>
+        
+        <div class="input-group">
+            <label for="eventName">Event Name</label>
+            <input type="text" id="eventName" placeholder="e.g., Summer Vacation...">
+        </div>
+
+        <div class="input-group">
+            <label for="eventDate">Date</label>
+            <input type="date" id="eventDate">
+        </div>
+
+        <button class="btn-shiny" id="saveBtn">Save Event</button>
+        <button class="btn-shiny btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'multi_event_trackers';
+
+        function getTrackers(customKey = STORAGE_KEY) {
+            const data = localStorage.getItem(customKey);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveTrackers(trackers, customKey = STORAGE_KEY) {
+            localStorage.setItem(customKey, JSON.stringify(trackers));
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const name = document.getElementById('eventName').value.trim();
+            const date = document.getElementById('eventDate').value;
+
+            if (!name || !date) {
+                alert("Please fill in both the name and the date.");
+                return;
+            }
+
+            const trackers = getTrackers();
+            trackers.push({
+                id: Date.now().toString(),
+                name: name,
+                date: date
+            });
+            
+            saveTrackers(trackers);
+            
+            // Redirect back to the main list
+            window.location.href = 'index.html';
+        });
+
+        // ==========================================
+        // UNIT TESTS (Running silently in console)
+        // ==========================================
+        function runTests() {
+            console.log("Running Unit Tests for Add Event Logic...");
+            
+            function assertEqual(actual, expected, testName) {
+                if (JSON.stringify(actual) === JSON.stringify(expected)) {
+                    console.log(`✅ [PASS] ${testName}`);
+                } else {
+                    console.error(`❌ [FAIL] ${testName}\nExpected: ${JSON.stringify(expected)}\nGot:      ${JSON.stringify(actual)}`);
+                }
+            }
+
+            const TEST_KEY = 'test_multi_event_trackers';
+            const backupData = localStorage.getItem(TEST_KEY);
+
+            try {
+                // Clear state for isolated testing
+                localStorage.removeItem(TEST_KEY);
+                
+                // Test 1: Empty retrieval
+                assertEqual(getTrackers(TEST_KEY), [], "Storage: Empty storage returns empty array");
+
+                // Test 2: Saving and retrieving data
+                const mockTrackers = [{ id: "123", name: "Test Holiday", date: "2026-12-24" }];
+                saveTrackers(mockTrackers, TEST_KEY);
+                
+                const retrieved = getTrackers(TEST_KEY);
+                assertEqual(retrieved.length, 1, "Storage: Retrieve array length");
+                assertEqual(retrieved[0].name, "Test Holiday", "Storage: Retrieve object name");
+                assertEqual(retrieved[0].date, "2026-12-24", "Storage: Retrieve object date");
+
+            } finally {
+                // Restore storage state
+                if (backupData) {
+                    localStorage.setItem(TEST_KEY, backupData);
+                } else {
+                    localStorage.removeItem(TEST_KEY);
+                }
+            }
+        }
+        runTests();
+    </script>
+</body>
+</html>
