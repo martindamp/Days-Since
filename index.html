@@ -181,8 +181,12 @@
                 currentTrackers = docSnap.data().trackers || [];
             } else {
                 currentTrackers = JSON.parse(localStorage.getItem('multi_event_trackers') || '[]');
+                localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
                 if(currentTrackers.length > 0) await setDoc(doc(db, "users", user.uid), { trackers: currentTrackers });
             }
+
+            // Inside index.html fetchTrackers
+
             renderTrackers();
         }
 
