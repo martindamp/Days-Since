@@ -116,31 +116,13 @@
 
     <!-- FIREBASE SDKs (Using standard modules for browser) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-        // ==========================================
-        // 🔥 STEP 2: PASTE YOUR FIREBASE CONFIG HERE
-        // ==========================================
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDzefQpOR6Z-894YxY805P73PK6AfqqGsw",
-            authDomain: "shiny-tracker-f6702.firebaseapp.com",
-            projectId: "shiny-tracker-f6702",
-            storageBucket: "shiny-tracker-f6702.firebasestorage.app",
-            messagingSenderId: "227154149489",
-            appId: "1:227154149489:web:735c5da8ab76a8033adbd0"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
+        // Import our centralized database connection
+        import { auth, db } from './firebase-config.js';
+        
+        // Import the specific Firebase functions we need for this page
+        import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        
         // UI Elements
         const screens = {
             loading: document.getElementById('loadingScreen'),
