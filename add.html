@@ -89,7 +89,7 @@
             const data = localStorage.getItem('multi_event_trackers');
             const trackers = data ? JSON.parse(data) : [];
             
-            trackers.push({ id: Date.now().toString(), name: name, date: date });
+            trackers.unshift({ id: Date.now().toString(), name: name, date: date });
             
             try {
                 await setDoc(doc(db, "users", uid), { trackers: trackers });

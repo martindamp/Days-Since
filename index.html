@@ -19,73 +19,69 @@
             align-items: center;
         }
 
-        .container {
-            width: 100%;
-            max-width: 650px;
-        }
+        .container { width: 100%; max-width: 650px; }
 
         /* Glassmorphism Styles */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            padding: 2.5rem;
-            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); padding: 2.5rem; margin-bottom: 1.5rem;
         }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
+        .header-actions { display: flex; gap: 10px; align-items: center; }
         h1 { margin: 0; font-size: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 
         /* Buttons & Inputs */
         input {
             width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.4); padding: 1rem; border-radius: 10px;
-            color: white; font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none;
-            margin-bottom: 1rem; transition: all 0.3s ease;
+            color: white; font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none; margin-bottom: 1rem;
         }
         input::placeholder { color: rgba(255,255,255,0.6); }
         input:focus { background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
         .btn-shiny {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white;
-            border: none; padding: 0.75rem 1.5rem; border-radius: 50px; font-size: 1rem;
-            font-weight: 600; cursor: pointer; text-decoration: none;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease; display: inline-block;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white; border: none;
+            padding: 0.75rem 1.5rem; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            text-decoration: none; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease; display: inline-block;
         }
         .btn-shiny:hover { box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); transform: translateY(-2px); }
-        
         .btn-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4); }
         .btn-danger:hover { box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6); }
 
-        /* Screen Toggles */
         #appScreen, #loadingScreen { display: none; }
         
-        /* Tracker Cards */
+        /* Tracker Cards with Drag Styles */
         .glass-card {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
             padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            cursor: grab; /* Shows the user they can pick this up */
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
         }
-        .tracker-info { width: 100%; }
+        
+        .glass-card:active { cursor: grabbing; }
+        
+        /* Visual feedback when a card is actively being dragged */
+        .glass-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+            border: 1px dashed rgba(255, 255, 255, 0.8);
+        }
+
+        .tracker-info { width: 100%; pointer-events: none; /* Prevents text selection while dragging */ }
         .tracker-info h2 { margin: 0 0 5px 0; font-size: 1.4rem; }
         .tracker-info p { margin: 0; color: #e0e0e0; font-size: 0.95rem; font-weight: 300; white-space: nowrap;}
-        .tracker-time-container { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        
+        /* Re-enable pointer events on the button so it can still be clicked */
+        .btn-delete { pointer-events: auto; }
+
+        .tracker-time-container { text-align: right; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
         .tracker-main-time { font-size: 1.8rem; font-weight: 700; }
         .tracker-subtext { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
 
-        /* ========================================== */
-        /* 📱 MOBILE RESPONSIVENESS FIXES             */
-        /* ========================================== */
+        /* Mobile Fixes */
         @media (max-width: 600px) {
             body { padding: 1.5rem 1rem; }
             .header { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
@@ -100,7 +96,6 @@
 </head>
 <body>
     <div class="container">
-
         <!-- 1. LOADING SCREEN -->
         <div id="loadingScreen" class="glass-panel" style="text-align: center;">
             <h2>Connecting to Cloud...</h2>
@@ -133,14 +128,10 @@
             </div>
             <div id="trackerList"></div>
         </div>
-
     </div>
 
-    <!-- FIREBASE SDKs (ALL SYNCHRONIZED TO 12.13.0) -->
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        
-        // BUG FIX: Version updated to match firebase-config.js
         import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         
@@ -157,9 +148,6 @@
             screens[screenName].style.display = 'block';
         }
 
-        // ==========================================
-        // DATABASE LOGIC (Firestore)
-        // ==========================================
         let currentTrackers = [];
 
         async function fetchTrackers(user) {
@@ -173,11 +161,9 @@
                 } else {
                     const localData = localStorage.getItem('multi_event_trackers');
                     const localTrackers = localData ? JSON.parse(localData) : [];
-                    
                     if (localTrackers.length > 0) {
                         currentTrackers = localTrackers;
                         await setDoc(docRef, { trackers: currentTrackers }); 
-                        console.log("Migrated local trackers to the cloud!");
                     } else {
                         currentTrackers = [];
                     }
@@ -191,10 +177,61 @@
         window.deleteTrackerFromCloud = async function(id) {
             if(!auth.currentUser) return;
             currentTrackers = currentTrackers.filter(t => t.id !== id);
-            
             await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
             localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
             renderTrackers();
+        }
+
+        // --- NEW: Function to save the reordered list to Firebase ---
+        async function saveNewOrder() {
+            if(!auth.currentUser) return;
+            
+            // Rebuild the array based on the new visual DOM order
+            const newOrderElements = document.querySelectorAll('.glass-card');
+            const reorderedTrackers = [];
+
+            newOrderElements.forEach(el => {
+                const id = el.getAttribute('data-id');
+                const tracker = currentTrackers.find(t => t.id === id);
+                if(tracker) reorderedTrackers.push(tracker);
+            });
+
+            currentTrackers = reorderedTrackers;
+            localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
+
+            try {
+                await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
+            } catch (error) {
+                console.error("Failed to sync new order", error);
+            }
+        }
+
+        // --- NEW: Drag and Drop Area Logic ---
+        trackerList.addEventListener('dragover', e => {
+            e.preventDefault(); // Allows elements to be dropped here
+            const afterElement = getDragAfterElement(trackerList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            
+            // Insert the dragged card into its new position
+            if (afterElement == null) {
+                trackerList.appendChild(draggable);
+            } else {
+                trackerList.insertBefore(draggable, afterElement);
+            }
+        });
+
+        // Helper to figure out exactly which card we are hovering above/below
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.glass-card:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
         // ==========================================
@@ -268,44 +305,42 @@
                 return;
             }
 
-            [...currentTrackers].reverse().forEach(tracker => {
+            // CRITICAL CHANGE: We removed the .reverse() here so your custom sort order is respected
+            currentTrackers.forEach(tracker => {
                 const timeInfo = calculateTimeSince(tracker.date);
                 const p = (val, unit) => `${val} ${val === 1 ? unit : unit + 's'}`;
                 const subtextString = `${p(timeInfo.years, 'year')} ${p(timeInfo.days, 'day')} ${p(timeInfo.hours, 'hour')} ${timeInfo.isPast ? 'since' : 'away'}`;
 
                 const card = document.createElement('div');
                 card.className = 'glass-card';
+                card.setAttribute('draggable', 'true'); // Makes it draggable
+                card.setAttribute('data-id', tracker.id); // Needed to save the new order
+
                 card.innerHTML = `
                     <div class="tracker-info">
                         <h2>${tracker.name}</h2>
                         <p>${formatDanishDate(tracker.date)}</p>
-                        <button class="btn-shiny btn-danger" onclick="deleteTrackerFromCloud('${tracker.id}')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-top: 10px;">Delete</button>
+                        <button class="btn-shiny btn-delete btn-danger" onclick="deleteTrackerFromCloud('${tracker.id}')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-top: 10px;">Delete</button>
                     </div>
                     <div class="tracker-time-container">
                         <div class="tracker-main-time">${timeInfo.totalDays}d ${timeInfo.hours}h</div>
                         <div class="tracker-subtext">${subtextString}</div>
                     </div>
                 `;
+                
+                // Add Drag start/end logic to the card
+                card.addEventListener('dragstart', () => {
+                    card.classList.add('dragging');
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    saveNewOrder(); // Immediately save the new order to the cloud when dropped
+                });
+
                 trackerList.appendChild(card);
             });
         }
-        
-        // ==========================================
-        // UNIT TESTS
-        // ==========================================
-        function runTests() {
-            console.log("Running Source Code Verification...");
-            const mockData = [{ id: "1", name: "Test", date: "2026-01-01" }];
-            localStorage.setItem('test_storage', JSON.stringify(mockData));
-            const retrieved = JSON.parse(localStorage.getItem('test_storage'));
-            if (retrieved && retrieved[0].name === "Test") {
-                 console.log("✅ [PASS] Local Storage formatting verified.");
-            } else {
-                 console.error("❌ [FAIL] Local Storage broken.");
-            }
-            localStorage.removeItem('test_storage');
-        }
-        runTests();
     </script>
 </body>
 </html>
