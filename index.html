@@ -122,122 +122,125 @@
                     <p id="userEmailDisplay" style="margin: 0; font-size: 0.8rem; opacity: 0.7;"></p>
                 </div>
                 <div class="header-actions">
+                    <button id="profileBtn" class="btn-shiny">Profile</button>
                     <a href="add.html" class="btn-shiny">+ Add Event</a>
                     <button id="logoutBtn" class="btn-shiny btn-danger" style="padding: 0.5rem 1rem;">Logout</button>
                 </div>
             </div>
             <div id="trackerList"></div>
         </div>
+        <!-- Add this Profile Screen block inside the .container div, after the appScreen div -->
+        <div id="profileScreen" class="glass-panel" style="display: none;">
+            <div class="header">
+                <h1>User Profile</h1>
+                <button id="backToAppBtn" class="btn-shiny">Back</button>
+            </div>
+            <div class="input-group">
+                <label>Account Email</label>
+                <p id="profileEmailDisplay" style="margin-bottom: 1.5rem; opacity: 0.8;"></p>
+            </div>
+            
+            <!-- Password change section only shows if user logged in with email/password -->
+            <div id="passwordChangeSection">
+                <div class="input-group">
+                    <label for="newPasswordInput">New Password</label>
+                    <input type="password" id="newPasswordInput" placeholder="Enter new password">
+                </div>
+                <button id="updatePasswordBtn" class="btn-shiny" style="width: 100%;">Update Password</button>
+            </div>
+            
+            <p id="profileMessage" style="margin-top: 1rem; font-size: 0.9rem; text-align: center;"></p>
+        </div>
+
+        <!-- Find your current appScreen header and replace the buttons div with this -->
+        
     </div>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged, 
+            updatePassword 
+        } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         
         const screens = {
             loading: document.getElementById('loadingScreen'),
             login: document.getElementById('loginScreen'),
-            app: document.getElementById('appScreen')
+            app: document.getElementById('appScreen'),
+            profile: document.getElementById('profileScreen')
         };
         const trackerList = document.getElementById('trackerList');
         const authError = document.getElementById('authError');
+        const profileMessage = document.getElementById('profileMessage');
 
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.style.display = 'none');
             screens[screenName].style.display = 'block';
         }
 
+        // --- Navigation ---
+        document.getElementById('profileBtn').addEventListener('click', () => {
+            const user = auth.currentUser;
+            document.getElementById('profileEmailDisplay').textContent = user.email;
+            
+            // Hide password section if user used Google (or other provider)
+            const isEmailUser = user.providerData.some(p => p.providerId === 'password');
+            document.getElementById('passwordChangeSection').style.display = isEmailUser ? 'block' : 'none';
+            if(!isEmailUser) profileMessage.textContent = "Social login users cannot change passwords here.";
+            
+            showScreen('profile');
+        });
+
+        document.getElementById('backToAppBtn').addEventListener('click', () => {
+            profileMessage.textContent = "";
+            showScreen('app');
+        });
+
+        // --- Password Change Logic ---
+        document.getElementById('updatePasswordBtn').addEventListener('click', () => {
+            const newPassword = document.getElementById('newPasswordInput').value;
+            if (newPassword.length < 6) {
+                profileMessage.style.color = "#ffb3b3";
+                profileMessage.textContent = "Password must be at least 6 characters.";
+                return;
+            }
+
+            updatePassword(auth.currentUser, newPassword).then(() => {
+                profileMessage.style.color = "#b3ffb3";
+                profileMessage.textContent = "Password updated successfully!";
+                document.getElementById('newPasswordInput').value = "";
+            }).catch((error) => {
+                profileMessage.style.color = "#ffb3b3";
+                // Firebase requires a recent login to change password. If this fails, user needs to re-log.
+                profileMessage.textContent = "Error: Please logout and login again to change password.";
+                console.error(error);
+            });
+        });
+
+        // --- Keep your existing fetchTrackers, delete, saveNewOrder, and Auth logic below ---
+        // (Ensure you keep the onAuthStateChanged logic to update userEmailDisplay)
+        
         let currentTrackers = [];
 
         async function fetchTrackers(user) {
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists() && docSnap.data().trackers && docSnap.data().trackers.length > 0) {
+                if (docSnap.exists() && docSnap.data().trackers) {
                     currentTrackers = docSnap.data().trackers;
                     localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
                 } else {
                     const localData = localStorage.getItem('multi_event_trackers');
-                    const localTrackers = localData ? JSON.parse(localData) : [];
-                    if (localTrackers.length > 0) {
-                        currentTrackers = localTrackers;
-                        await setDoc(docRef, { trackers: currentTrackers }); 
-                    } else {
-                        currentTrackers = [];
-                    }
+                    currentTrackers = localData ? JSON.parse(localData) : [];
+                    if (currentTrackers.length > 0) await setDoc(docRef, { trackers: currentTrackers });
                 }
                 renderTrackers();
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
+            } catch (error) { console.error(error); }
         }
-
-        window.deleteTrackerFromCloud = async function(id) {
-            if(!auth.currentUser) return;
-            currentTrackers = currentTrackers.filter(t => t.id !== id);
-            await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
-            localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
-            renderTrackers();
-        }
-
-        // --- NEW: Function to save the reordered list to Firebase ---
-        async function saveNewOrder() {
-            if(!auth.currentUser) return;
-            
-            // Rebuild the array based on the new visual DOM order
-            const newOrderElements = document.querySelectorAll('.glass-card');
-            const reorderedTrackers = [];
-
-            newOrderElements.forEach(el => {
-                const id = el.getAttribute('data-id');
-                const tracker = currentTrackers.find(t => t.id === id);
-                if(tracker) reorderedTrackers.push(tracker);
-            });
-
-            currentTrackers = reorderedTrackers;
-            localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
-
-            try {
-                await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
-            } catch (error) {
-                console.error("Failed to sync new order", error);
-            }
-        }
-
-        // --- NEW: Drag and Drop Area Logic ---
-        trackerList.addEventListener('dragover', e => {
-            e.preventDefault(); // Allows elements to be dropped here
-            const afterElement = getDragAfterElement(trackerList, e.clientY);
-            const draggable = document.querySelector('.dragging');
-            
-            // Insert the dragged card into its new position
-            if (afterElement == null) {
-                trackerList.appendChild(draggable);
-            } else {
-                trackerList.insertBefore(draggable, afterElement);
-            }
-        });
-
-        // Helper to figure out exactly which card we are hovering above/below
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.glass-card:not(.dragging)')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        // ==========================================
-        // AUTHENTICATION LOGIC
-        // ==========================================
-        showScreen('loading');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -251,6 +254,9 @@
             }
         });
 
+        // ... [Rest of your existing event listeners and render functions] ...
+        
+        // Include these to keep your existing functionality:
         document.getElementById('loginBtn').addEventListener('click', () => {
             const e = document.getElementById('emailInput').value;
             const p = document.getElementById('passwordInput').value;
@@ -268,79 +274,9 @@
         });
 
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-
-        // ==========================================
-        // RENDER & TIME LOGIC
-        // ==========================================
-        function calculateTimeSince(targetDateStr, currentDateObj = new Date()) {
-            if (!targetDateStr) return null;
-            const msTarget = new Date(targetDateStr).getTime();
-            const msNow = currentDateObj.getTime();
-            const isPast = msNow >= msTarget;
-            const totalHours = Math.floor(Math.abs(msNow - msTarget) / (1000 * 60 * 60));
-            const totalDays = Math.floor(totalHours / 24);
-            
-            let start = isPast ? new Date(targetDateStr) : new Date(currentDateObj);
-            let end = isPast ? new Date(currentDateObj) : new Date(targetDateStr);
-            let years = end.getFullYear() - start.getFullYear();
-            if (end.getMonth() < start.getMonth() || (end.getMonth() === start.getMonth() && end.getDate() < start.getDate())) years--;
-            if (years < 0) years = 0;
-            
-            let dateAfterYears = new Date(start);
-            dateAfterYears.setFullYear(dateAfterYears.getFullYear() + years);
-            const daysAfterYears = Math.floor((end.getTime() - dateAfterYears.getTime()) / (1000 * 60 * 60 * 24));
-
-            return { isPast, totalDays, years, days: daysAfterYears, hours: totalHours % 24 };
-        }
-
-        function formatDanishDate(dateStr) {
-            const parts = dateStr.split('-');
-            return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateStr;
-        }
-
-        function renderTrackers() {
-            trackerList.innerHTML = '';
-            if (currentTrackers.length === 0) {
-                trackerList.innerHTML = '<p style="text-align:center; opacity:0.8;">No events tracked yet. Click "Add Event" to start!</p>';
-                return;
-            }
-
-            // CRITICAL CHANGE: We removed the .reverse() here so your custom sort order is respected
-            currentTrackers.forEach(tracker => {
-                const timeInfo = calculateTimeSince(tracker.date);
-                const p = (val, unit) => `${val} ${val === 1 ? unit : unit + 's'}`;
-                const subtextString = `${p(timeInfo.years, 'year')} ${p(timeInfo.days, 'day')} ${p(timeInfo.hours, 'hour')} ${timeInfo.isPast ? 'since' : 'away'}`;
-
-                const card = document.createElement('div');
-                card.className = 'glass-card';
-                card.setAttribute('draggable', 'true'); // Makes it draggable
-                card.setAttribute('data-id', tracker.id); // Needed to save the new order
-
-                card.innerHTML = `
-                    <div class="tracker-info">
-                        <h2>${tracker.name}</h2>
-                        <p>${formatDanishDate(tracker.date)}</p>
-                        <button class="btn-shiny btn-delete btn-danger" onclick="deleteTrackerFromCloud('${tracker.id}')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-top: 10px;">Delete</button>
-                    </div>
-                    <div class="tracker-time-container">
-                        <div class="tracker-main-time">${timeInfo.totalDays}d ${timeInfo.hours}h</div>
-                        <div class="tracker-subtext">${subtextString}</div>
-                    </div>
-                `;
-                
-                // Add Drag start/end logic to the card
-                card.addEventListener('dragstart', () => {
-                    card.classList.add('dragging');
-                });
-
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('dragging');
-                    saveNewOrder(); // Immediately save the new order to the cloud when dropped
-                });
-
-                trackerList.appendChild(card);
-            });
-        }
-    </script>
+        
+        // Add your existing renderTrackers, calculateTimeSince, formatDanishDate, 
+        // saveNewOrder, and drag-and-drop functions here.
+</script>
 </body>
 </html>
