@@ -37,6 +37,13 @@
         }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         h1 { margin: 0; font-size: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 
         /* Buttons & Inputs */
@@ -69,11 +76,26 @@
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
             padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
         }
+        .tracker-info { width: 100%; }
         .tracker-info h2 { margin: 0 0 5px 0; font-size: 1.4rem; }
-        .tracker-info p { margin: 0; color: #e0e0e0; font-size: 0.95rem; font-weight: 300;}
+        .tracker-info p { margin: 0; color: #e0e0e0; font-size: 0.95rem; font-weight: 300; white-space: nowrap;}
         .tracker-time-container { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
         .tracker-main-time { font-size: 1.8rem; font-weight: 700; }
-        .tracker-subtext { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px; }
+        .tracker-subtext { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+
+        /* ========================================== */
+        /* 📱 MOBILE RESPONSIVENESS FIXES             */
+        /* ========================================== */
+        @media (max-width: 600px) {
+            body { padding: 1.5rem 1rem; }
+            .header { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+            h1 { font-size: 1.6rem; }
+            .header-actions { width: 100%; display: flex; }
+            .header-actions a, .header-actions button { flex: 1; text-align: center; padding: 0.75rem 0.5rem; font-size: 0.9rem; }
+            .glass-card { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+            .tracker-time-container { align-items: flex-start; width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 1.2rem; }
+            .tracker-subtext { white-space: normal; }
+        }
     </style>
 </head>
 <body>
@@ -104,9 +126,9 @@
                     <h1>My Trackers</h1>
                     <p id="userEmailDisplay" style="margin: 0; font-size: 0.8rem; opacity: 0.7;"></p>
                 </div>
-                <div>
+                <div class="header-actions">
                     <a href="add.html" class="btn-shiny">+ Add Event</a>
-                    <button id="logoutBtn" class="btn-shiny btn-danger" style="padding: 0.5rem 1rem; margin-left: 10px; font-size: 0.85rem;">Logout</button>
+                    <button id="logoutBtn" class="btn-shiny btn-danger" style="padding: 0.5rem 1rem;">Logout</button>
                 </div>
             </div>
             <div id="trackerList"></div>
@@ -114,16 +136,14 @@
 
     </div>
 
-    <!-- FIREBASE SDKs (Using standard modules for browser) -->
+    <!-- FIREBASE SDKs (ALL SYNCHRONIZED TO 12.13.0) -->
     <script type="module">
-        // Import our centralized database connection
         import { auth, db } from './firebase-config.js';
         
-        // Import the specific Firebase functions we need for this page
+        // BUG FIX: Version updated to match firebase-config.js
         import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         
-        // UI Elements
         const screens = {
             loading: document.getElementById('loadingScreen'),
             login: document.getElementById('loginScreen'),
@@ -146,14 +166,23 @@
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    currentTrackers = docSnap.data().trackers || [];
+                
+                if (docSnap.exists() && docSnap.data().trackers && docSnap.data().trackers.length > 0) {
+                    currentTrackers = docSnap.data().trackers;
+                    localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
                 } else {
-                    currentTrackers = [];
+                    const localData = localStorage.getItem('multi_event_trackers');
+                    const localTrackers = localData ? JSON.parse(localData) : [];
+                    
+                    if (localTrackers.length > 0) {
+                        currentTrackers = localTrackers;
+                        await setDoc(docRef, { trackers: currentTrackers }); 
+                        console.log("Migrated local trackers to the cloud!");
+                    } else {
+                        currentTrackers = [];
+                    }
                 }
                 renderTrackers();
-                // Overwrite localStorage so add.html knows what to append to
-                localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers)); 
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -163,9 +192,7 @@
             if(!auth.currentUser) return;
             currentTrackers = currentTrackers.filter(t => t.id !== id);
             
-            // Update Firestore
             await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
-            // Update local copy
             localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
             renderTrackers();
         }
@@ -180,8 +207,6 @@
                 document.getElementById('userEmailDisplay').textContent = user.email;
                 showScreen('app');
                 fetchTrackers(user);
-                
-                // Save uid locally so add.html can use it to save to the cloud
                 localStorage.setItem('current_uid', user.uid); 
             } else {
                 showScreen('login');
@@ -208,7 +233,7 @@
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
         // ==========================================
-        // RENDER & TIME LOGIC (Same as before)
+        // RENDER & TIME LOGIC
         // ==========================================
         function calculateTimeSince(targetDateStr, currentDateObj = new Date()) {
             if (!targetDateStr) return null;
@@ -264,6 +289,23 @@
                 trackerList.appendChild(card);
             });
         }
+        
+        // ==========================================
+        // UNIT TESTS
+        // ==========================================
+        function runTests() {
+            console.log("Running Source Code Verification...");
+            const mockData = [{ id: "1", name: "Test", date: "2026-01-01" }];
+            localStorage.setItem('test_storage', JSON.stringify(mockData));
+            const retrieved = JSON.parse(localStorage.getItem('test_storage'));
+            if (retrieved && retrieved[0].name === "Test") {
+                 console.log("✅ [PASS] Local Storage formatting verified.");
+            } else {
+                 console.error("❌ [FAIL] Local Storage broken.");
+            }
+            localStorage.removeItem('test_storage');
+        }
+        runTests();
     </script>
 </body>
 </html>

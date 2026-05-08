@@ -12,7 +12,6 @@
             margin: 0;
             height: 100vh;
             color: #fff;
-            /* Static, premium "shiny" gradient matching index.html */
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #23a6d5 100%);
             display: flex;
             justify-content: center;
@@ -32,86 +31,29 @@
             text-align: center;
         }
 
-        h1 {
-            margin-top: 0;
-            margin-bottom: 2rem;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            opacity: 0.9;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
+        h1 { margin-top: 0; margin-bottom: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.95rem; font-weight: 600; opacity: 0.9; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 
         input {
-            width: 100%;
-            box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 1rem;
-            border-radius: 10px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.1rem;
-            outline: none;
-            transition: all 0.3s ease;
+            width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4); padding: 1rem; border-radius: 10px;
+            color: white; font-family: 'Poppins', sans-serif; font-size: 1.1rem; outline: none; transition: all 0.3s ease;
         }
 
         input::placeholder { color: rgba(255,255,255,0.5); }
+        input:focus { background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); border-color: rgba(255, 255, 255, 0.8); }
         
-        input:focus {
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-            border-color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Note: Browser default date pickers are often white/gray and cannot be fully styled with pure CSS, 
-           but the input box itself will remain glassy */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
         .btn-shiny {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: white;
-            border: none;
-            padding: 1rem;
-            width: 100%;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-            transition: all 0.3s ease;
-            margin-top: 1rem;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white;
+            border: none; padding: 1rem; width: 100%; border-radius: 10px; font-size: 1.1rem;
+            font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease; margin-top: 1rem;
         }
-
-        .btn-shiny:hover {
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .btn-cancel {
-            background: transparent;
-            box-shadow: none;
-            border: 1px solid rgba(255,255,255,0.5);
-            margin-top: 1rem;
-        }
-
-        .btn-cancel:hover {
-            background: rgba(255,255,255,0.1);
-            box-shadow: none;
-        }
+        .btn-shiny:hover { box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); transform: translateY(-2px); }
+        .btn-cancel { background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.5); margin-top: 1rem; }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -132,30 +74,24 @@
         <button class="btn-shiny btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
     </div>
 
-    <!-- Inside add.html -->
     <script type="module">
-        // Import our centralized database connection (only need db here, not auth)
         import { db } from './firebase-config.js';
-        
-        // Import the specific Firebase functions we need
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         document.getElementById('saveBtn').addEventListener('click', async () => {
             const name = document.getElementById('eventName').value.trim();
             const date = document.getElementById('eventDate').value;
-            const uid = localStorage.getItem('current_uid'); // Grab the logged-in user ID
+            const uid = localStorage.getItem('current_uid'); 
 
             if (!name || !date) { alert("Please fill in both the name and the date."); return; }
             if (!uid) { alert("You must be logged in to save events."); return; }
 
-            // Get existing trackers from local memory to append to
             const data = localStorage.getItem('multi_event_trackers');
             const trackers = data ? JSON.parse(data) : [];
             
             trackers.push({ id: Date.now().toString(), name: name, date: date });
             
             try {
-                // Save the updated array to the Cloud!
                 await setDoc(doc(db, "users", uid), { trackers: trackers });
                 window.location.href = 'index.html';
             } catch (error) {
@@ -164,16 +100,10 @@
             }
         });
         
-        // --- Unit Tests per instructions ---
         function runTests() {
             console.log("Running Unit Tests for Data Integrity before Cloud Sync...");
             const testTracker = { id: "123", name: "Test", date: "2026-12-24" };
-            // Ensure object has required keys for cloud storage
-            const hasId = testTracker.hasOwnProperty('id');
-            const hasName = testTracker.hasOwnProperty('name');
-            const hasDate = testTracker.hasOwnProperty('date');
-            
-            if (hasId && hasName && hasDate) {
+            if (testTracker.hasOwnProperty('id') && testTracker.hasOwnProperty('name') && testTracker.hasOwnProperty('date')) {
                 console.log("✅ [PASS] Data model correctly structured for Firestore.");
             } else {
                 console.error("❌ [FAIL] Data model missing required fields.");
