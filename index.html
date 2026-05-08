@@ -21,7 +21,6 @@
 
         .container { width: 100%; max-width: 650px; }
 
-        /* Glassmorphism Styles */
         .glass-panel {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 20px;
@@ -30,143 +29,102 @@
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
         .header-actions { display: flex; gap: 10px; align-items: center; }
-        h1 { margin: 0; font-size: 2rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { margin: 0; font-size: 1.8rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 
-        /* Buttons & Inputs */
         input {
             width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.4); padding: 1rem; border-radius: 10px;
             color: white; font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none; margin-bottom: 1rem;
         }
-        input::placeholder { color: rgba(255,255,255,0.6); }
         input:focus { background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
         .btn-shiny {
             background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white; border: none;
-            padding: 0.75rem 1.5rem; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer;
-            text-decoration: none; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease; display: inline-block;
+            padding: 0.75rem 1.5rem; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            text-decoration: none; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); transition: all 0.3s ease;
         }
-        .btn-shiny:hover { box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); transform: translateY(-2px); }
-        .btn-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4); }
-        .btn-danger:hover { box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6); }
+        .btn-shiny:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); }
+        .btn-danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); }
 
-        #appScreen, #loadingScreen { display: none; }
-        
-        /* Tracker Cards with Drag Styles */
         .glass-card {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
             padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
-            cursor: grab; /* Shows the user they can pick this up */
-            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            cursor: grab;
         }
-        
-        .glass-card:active { cursor: grabbing; }
-        
-        /* Visual feedback when a card is actively being dragged */
-        .glass-card.dragging {
-            opacity: 0.4;
-            transform: scale(0.98);
-            border: 1px dashed rgba(255, 255, 255, 0.8);
-        }
+        .dragging { opacity: 0.5; border: 1px dashed #fff; }
 
-        .tracker-info { width: 100%; pointer-events: none; /* Prevents text selection while dragging */ }
-        .tracker-info h2 { margin: 0 0 5px 0; font-size: 1.4rem; }
-        .tracker-info p { margin: 0; color: #e0e0e0; font-size: 0.95rem; font-weight: 300; white-space: nowrap;}
-        
-        /* Re-enable pointer events on the button so it can still be clicked */
-        .btn-delete { pointer-events: auto; }
+        .tracker-info h2 { margin: 0; font-size: 1.3rem; }
+        .tracker-info p { margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.8; }
+        .tracker-time-container { text-align: right; }
+        .tracker-main-time { font-size: 1.6rem; font-weight: 700; }
+        .tracker-subtext { font-size: 0.75rem; opacity: 0.7; margin-top: 4px; }
 
-        .tracker-time-container { text-align: right; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
-        .tracker-main-time { font-size: 1.8rem; font-weight: 700; }
-        .tracker-subtext { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-
-        /* Mobile Fixes */
         @media (max-width: 600px) {
-            body { padding: 1.5rem 1rem; }
-            .header { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-            h1 { font-size: 1.6rem; }
-            .header-actions { width: 100%; display: flex; }
-            .header-actions a, .header-actions button { flex: 1; text-align: center; padding: 0.75rem 0.5rem; font-size: 0.9rem; }
-            .glass-card { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-            .tracker-time-container { align-items: flex-start; width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 1.2rem; }
-            .tracker-subtext { white-space: normal; }
+            .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .header-actions { width: 100%; justify-content: space-between; }
+            .glass-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .tracker-time-container { text-align: left; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 1. LOADING SCREEN -->
+        <!-- 1. LOADING -->
         <div id="loadingScreen" class="glass-panel" style="text-align: center;">
-            <h2>Connecting to Cloud...</h2>
+            <h2>Connecting...</h2>
         </div>
 
-        <!-- 2. LOGIN SCREEN -->
-        <div id="loginScreen" class="glass-panel" style="text-align: center; max-width: 400px; margin: 0 auto;">
+        <!-- 2. LOGIN -->
+        <div id="loginScreen" class="glass-panel" style="text-align: center; max-width: 400px; margin: 0 auto; display:none;">
             <h1>Welcome Back</h1>
-            <p style="margin-bottom: 2rem; opacity: 0.8;">Sign in to sync your trackers</p>
-            <input type="email" id="emailInput" placeholder="Email address">
+            <input type="email" id="emailInput" placeholder="Email">
             <input type="password" id="passwordInput" placeholder="Password">
-            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1rem;">
-                <button id="loginBtn" class="btn-shiny">Login</button>
-                <button id="registerBtn" class="btn-shiny" style="background: transparent; border: 1px solid white; box-shadow: none;">Register</button>
+            <div style="display: flex; gap: 10px;">
+                <button id="loginBtn" class="btn-shiny" style="flex:1;">Login</button>
+                <button id="registerBtn" class="btn-shiny" style="flex:1; background:transparent; border:1px solid #fff;">Register</button>
             </div>
-            <p id="authError" style="color: #ffb3b3; font-size: 0.9rem; margin-top: 1rem; display: none;"></p>
+            <p id="authError" style="color: #ffb3b3; font-size: 0.8rem; margin-top: 1rem;"></p>
         </div>
 
-        <!-- 3. MAIN DASHBOARD SCREEN -->
-        <div id="appScreen">
+        <!-- 3. APP DASHBOARD -->
+        <div id="appScreen" style="display:none;">
             <div class="header">
                 <div>
                     <h1>My Trackers</h1>
-                    <p id="userEmailDisplay" style="margin: 0; font-size: 0.8rem; opacity: 0.7;"></p>
+                    <p id="userEmailDisplay" style="margin:0; font-size: 0.8rem; opacity: 0.6;"></p>
                 </div>
                 <div class="header-actions">
                     <button id="profileBtn" class="btn-shiny">Profile</button>
-                    <a href="add.html" class="btn-shiny">+ Add Event</a>
-                    <button id="logoutBtn" class="btn-shiny btn-danger" style="padding: 0.5rem 1rem;">Logout</button>
+                    <a href="add.html" class="btn-shiny">+ Add</a>
+                    <button id="logoutBtn" class="btn-shiny btn-danger">Exit</button>
                 </div>
             </div>
             <div id="trackerList"></div>
         </div>
-        <!-- Add this Profile Screen block inside the .container div, after the appScreen div -->
-        <div id="profileScreen" class="glass-panel" style="display: none;">
-            <div class="header">
-                <h1>User Profile</h1>
-                <button id="backToAppBtn" class="btn-shiny">Back</button>
-            </div>
-            <div class="input-group">
-                <label>Account Email</label>
-                <p id="profileEmailDisplay" style="margin-bottom: 1.5rem; opacity: 0.8;"></p>
-            </div>
-            
-            <!-- Password change section only shows if user logged in with email/password -->
-            <div id="passwordChangeSection">
-                <div class="input-group">
-                    <label for="newPasswordInput">New Password</label>
-                    <input type="password" id="newPasswordInput" placeholder="Enter new password">
-                </div>
-                <button id="updatePasswordBtn" class="btn-shiny" style="width: 100%;">Update Password</button>
-            </div>
-            
-            <p id="profileMessage" style="margin-top: 1rem; font-size: 0.9rem; text-align: center;"></p>
-        </div>
 
-        <!-- Find your current appScreen header and replace the buttons div with this -->
-        
+        <!-- 4. PROFILE SCREEN -->
+        <div id="profileScreen" class="glass-panel" style="display:none;">
+            <div class="header">
+                <h1>Profile</h1>
+                <button id="backBtn" class="btn-shiny">Back</button>
+            </div>
+            <p>Logged in as: <strong id="profileEmail"></strong></p>
+            <div id="passSection" style="margin-top: 2rem;">
+                <input type="password" id="newPass" placeholder="New Password">
+                <button id="savePassBtn" class="btn-shiny" style="width: 100%;">Update Password</button>
+            </div>
+            <p id="profileMsg" style="margin-top: 1rem; font-size: 0.85rem; text-align: center;"></p>
+        </div>
     </div>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
         import { 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged, 
-            updatePassword 
+            signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword 
         } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-        
+
         const screens = {
             loading: document.getElementById('loadingScreen'),
             login: document.getElementById('loginScreen'),
@@ -174,109 +132,116 @@
             profile: document.getElementById('profileScreen')
         };
         const trackerList = document.getElementById('trackerList');
-        const authError = document.getElementById('authError');
-        const profileMessage = document.getElementById('profileMessage');
-
-        function showScreen(screenName) {
-            Object.values(screens).forEach(s => s.style.display = 'none');
-            screens[screenName].style.display = 'block';
-        }
-
-        // --- Navigation ---
-        document.getElementById('profileBtn').addEventListener('click', () => {
-            const user = auth.currentUser;
-            document.getElementById('profileEmailDisplay').textContent = user.email;
-            
-            // Hide password section if user used Google (or other provider)
-            const isEmailUser = user.providerData.some(p => p.providerId === 'password');
-            document.getElementById('passwordChangeSection').style.display = isEmailUser ? 'block' : 'none';
-            if(!isEmailUser) profileMessage.textContent = "Social login users cannot change passwords here.";
-            
-            showScreen('profile');
-        });
-
-        document.getElementById('backToAppBtn').addEventListener('click', () => {
-            profileMessage.textContent = "";
-            showScreen('app');
-        });
-
-        // --- Password Change Logic ---
-        document.getElementById('updatePasswordBtn').addEventListener('click', () => {
-            const newPassword = document.getElementById('newPasswordInput').value;
-            if (newPassword.length < 6) {
-                profileMessage.style.color = "#ffb3b3";
-                profileMessage.textContent = "Password must be at least 6 characters.";
-                return;
-            }
-
-            updatePassword(auth.currentUser, newPassword).then(() => {
-                profileMessage.style.color = "#b3ffb3";
-                profileMessage.textContent = "Password updated successfully!";
-                document.getElementById('newPasswordInput').value = "";
-            }).catch((error) => {
-                profileMessage.style.color = "#ffb3b3";
-                // Firebase requires a recent login to change password. If this fails, user needs to re-log.
-                profileMessage.textContent = "Error: Please logout and login again to change password.";
-                console.error(error);
-            });
-        });
-
-        // --- Keep your existing fetchTrackers, delete, saveNewOrder, and Auth logic below ---
-        // (Ensure you keep the onAuthStateChanged logic to update userEmailDisplay)
-        
         let currentTrackers = [];
 
-        async function fetchTrackers(user) {
-            try {
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().trackers) {
-                    currentTrackers = docSnap.data().trackers;
-                    localStorage.setItem('multi_event_trackers', JSON.stringify(currentTrackers));
-                } else {
-                    const localData = localStorage.getItem('multi_event_trackers');
-                    currentTrackers = localData ? JSON.parse(localData) : [];
-                    if (currentTrackers.length > 0) await setDoc(docRef, { trackers: currentTrackers });
-                }
-                renderTrackers();
-            } catch (error) { console.error(error); }
+        function showScreen(name) {
+            Object.values(screens).forEach(s => s.style.display = 'none');
+            screens[name].style.display = 'block';
         }
 
+        // --- AUTH ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('userEmailDisplay').textContent = user.email;
+                document.getElementById('profileEmail').textContent = user.email;
+                localStorage.setItem('current_uid', user.uid);
                 showScreen('app');
                 fetchTrackers(user);
-                localStorage.setItem('current_uid', user.uid); 
             } else {
                 showScreen('login');
                 localStorage.removeItem('current_uid');
             }
         });
 
-        // ... [Rest of your existing event listeners and render functions] ...
-        
-        // Include these to keep your existing functionality:
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            const e = document.getElementById('emailInput').value;
-            const p = document.getElementById('passwordInput').value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => {
-                authError.textContent = err.message; authError.style.display = 'block';
-            });
-        });
+        document.getElementById('loginBtn').onclick = () => {
+            signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
+                .catch(e => authError.textContent = e.message);
+        };
 
-        document.getElementById('registerBtn').addEventListener('click', () => {
-            const e = document.getElementById('emailInput').value;
-            const p = document.getElementById('passwordInput').value;
-            createUserWithEmailAndPassword(auth, e, p).catch(err => {
-                authError.textContent = err.message; authError.style.display = 'block';
-            });
-        });
+        document.getElementById('registerBtn').onclick = () => {
+            createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
+                .catch(e => authError.textContent = e.message);
+        };
 
-        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-        
-        // Add your existing renderTrackers, calculateTimeSince, formatDanishDate, 
-        // saveNewOrder, and drag-and-drop functions here.
-</script>
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+        // --- PROFILE ---
+        document.getElementById('profileBtn').onclick = () => showScreen('profile');
+        document.getElementById('backBtn').onclick = () => showScreen('app');
+        document.getElementById('savePassBtn').onclick = () => {
+            updatePassword(auth.currentUser, newPass.value)
+                .then(() => profileMsg.textContent = "Success!")
+                .catch(e => profileMsg.textContent = "Error: Relogin required.");
+        };
+
+        // --- DATA ---
+        async function fetchTrackers(user) {
+            const docSnap = await getDoc(doc(db, "users", user.uid));
+            if (docSnap.exists()) {
+                currentTrackers = docSnap.data().trackers || [];
+            } else {
+                currentTrackers = JSON.parse(localStorage.getItem('multi_event_trackers') || '[]');
+                if(currentTrackers.length > 0) await setDoc(doc(db, "users", user.uid), { trackers: currentTrackers });
+            }
+            renderTrackers();
+        }
+
+        window.deleteTracker = async (id) => {
+            currentTrackers = currentTrackers.filter(t => t.id !== id);
+            await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
+            renderTrackers();
+        };
+
+        async function saveOrder() {
+            const els = [...trackerList.querySelectorAll('.glass-card')];
+            currentTrackers = els.map(el => currentTrackers.find(t => t.id === el.dataset.id));
+            await setDoc(doc(db, "users", auth.currentUser.uid), { trackers: currentTrackers });
+        }
+
+        // --- RENDER ---
+        function renderTrackers() {
+            trackerList.innerHTML = '';
+            currentTrackers.forEach(t => {
+                const time = calculateTime(t.date);
+                const card = document.createElement('div');
+                card.className = 'glass-card';
+                card.draggable = true;
+                card.dataset.id = t.id;
+                card.innerHTML = `
+                    <div class="tracker-info">
+                        <h2>${t.name}</h2>
+                        <p>${t.date.split('-').reverse().join('-')}</p>
+                        <button class="btn-shiny btn-danger" onclick="deleteTracker('${t.id}')" style="margin-top:10px; padding:5px 10px; font-size:0.7rem;">Delete</button>
+                    </div>
+                    <div class="tracker-time-container">
+                        <div class="tracker-main-time">${time.totalDays}d ${time.hours}h</div>
+                        <div class="tracker-subtext">${time.y}y ${time.d}d ${time.h}h ${time.past ? 'since' : 'away'}</div>
+                    </div>
+                `;
+                card.ondragstart = () => card.classList.add('dragging');
+                card.ondragend = () => { card.classList.remove('dragging'); saveOrder(); };
+                trackerList.appendChild(card);
+            });
+        }
+
+        trackerList.ondragover = e => {
+            e.preventDefault();
+            const drag = document.querySelector('.dragging');
+            const after = ([...trackerList.querySelectorAll('.glass-card:not(.dragging)')].find(el => {
+                return e.clientY < el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2;
+            }));
+            after ? trackerList.insertBefore(drag, after) : trackerList.appendChild(drag);
+        };
+
+        function calculateTime(d) {
+            const t = new Date(d).getTime(), now = new Date().getTime(), past = now >= t, diff = Math.abs(now - t);
+            const hrs = Math.floor(diff / 3600000), days = Math.floor(hrs / 24);
+            let s = past ? new Date(d) : new Date(), e = past ? new Date() : new Date(d);
+            let y = e.getFullYear() - s.getFullYear();
+            if (e.getMonth() < s.getMonth() || (e.getMonth() === s.getMonth() && e.getDate() < s.getDate())) y--;
+            let ref = new Date(s); ref.setFullYear(ref.getFullYear() + Math.max(0, y));
+            return { past, totalDays: days, hours: hrs % 24, y: Math.max(0, y), d: Math.floor((e - ref) / 86400000), h: hrs % 24 };
+        }
+    </script>
 </body>
 </html>
